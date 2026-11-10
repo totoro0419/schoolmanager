@@ -1,0 +1,10 @@
+name = "schoolmanager-private-sync"
+main = "worker.ts"
+compatibility_date = "2026-11-01"
+workers_dev = true
+# Set DATA_REPO and ALLOWED_ORIGIN for your deployment.
+# Store GITHUB_TOKEN and ACCESS_KEY only with `wrangler secret put`.
+# Deploy only to an existing free account, with paid Workers features disabled.
+[vars]
+DATA_REPO = "totoro0419/print-library-data"
+ALLOWED_ORIGIN = "https://totoro0419.github.io"

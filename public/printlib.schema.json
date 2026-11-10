@@ -1,0 +1,387 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://totoro0419.github.io/schoolmanager/printlib.schema.json",
+  "title": "Printlib metadata 1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentId",
+    "title",
+    "primarySubjectId",
+    "topicIds",
+    "materialTypeId",
+    "series",
+    "tags",
+    "relations",
+    "source",
+    "pageMapping",
+    "review",
+    "evidence",
+    "attributes",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "documentId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "primarySubjectId": {
+      "$ref": "#/definitions/nullableId"
+    },
+    "topicIds": {
+      "$ref": "#/definitions/ids"
+    },
+    "materialTypeId": {
+      "$ref": "#/definitions/nullableId"
+    },
+    "tags": {
+      "$ref": "#/definitions/ids"
+    },
+    "series": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "number",
+        "displayOrder",
+        "orderLocked"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/nullableId"
+        },
+        "number": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 100
+        },
+        "displayOrder": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "orderLocked": {
+          "type": "boolean"
+        }
+      }
+    },
+    "relations": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "documentId",
+          "type"
+        ],
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "type": {
+            "enum": [
+              "answer",
+              "explanation",
+              "supplement",
+              "previous",
+              "next",
+              "revision",
+              "alternative"
+            ]
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileName",
+        "sha256",
+        "originalDocumentId",
+        "analysis"
+      ],
+      "properties": {
+        "fileName": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "originalDocumentId": {
+          "$ref": "#/definitions/nullableId"
+        },
+        "analysis": {
+          "enum": [
+            "text",
+            "external-ai",
+            "ocr",
+            "none"
+          ]
+        }
+      }
+    },
+    "pageMapping": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pdfPage",
+          "sourcePage",
+          "printedNumber",
+          "rotation",
+          "blank",
+          "duplicateOf",
+          "materialId"
+        ],
+        "properties": {
+          "pdfPage": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sourcePage": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "printedNumber": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "rotation": {
+            "enum": [
+              0,
+              90,
+              180,
+              270
+            ]
+          },
+          "blank": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "duplicateOf": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "materialId": {
+            "$ref": "#/definitions/nullableId"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 100000
+          },
+          "ocrText": {
+            "type": "string",
+            "maxLength": 100000
+          },
+          "handwriting": {
+            "enum": [
+              "annotation",
+              "unverified"
+            ]
+          },
+          "ocrVerified": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "topics",
+        "materialType",
+        "series",
+        "number",
+        "order",
+        "tags"
+      ],
+      "properties": {
+        "subject": {
+          "$ref": "#/definitions/decision"
+        },
+        "topics": {
+          "$ref": "#/definitions/decision"
+        },
+        "materialType": {
+          "$ref": "#/definitions/decision"
+        },
+        "series": {
+          "$ref": "#/definitions/decision"
+        },
+        "number": {
+          "$ref": "#/definitions/decision"
+        },
+        "order": {
+          "$ref": "#/definitions/decision"
+        },
+        "tags": {
+          "$ref": "#/definitions/decision"
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "field",
+          "kind",
+          "value",
+          "page",
+          "quote",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "field": {
+            "enum": [
+              "subject",
+              "topics",
+              "materialType",
+              "series",
+              "number",
+              "order",
+              "tags"
+            ]
+          },
+          "kind": {
+            "enum": [
+              "user",
+              "series",
+              "printed",
+              "identifier",
+              "similarity",
+              "content"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "page": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "verified": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "attributes": {
+      "type": "object"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "definitions": {
+    "nullableId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 1000,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reason",
+        "evidenceIds",
+        "locked"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "confirmed",
+            "tentative",
+            "unclassified"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "evidenceIds": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "string",
+            "maxLength": 160
+          }
+        },
+        "locked": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

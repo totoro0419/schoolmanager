@@ -1,0 +1,7 @@
+import {readdir,readFile,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+const files=[];
+async function scan(dir){for(const f of await readdir('dist/'+dir,{withFileTypes:true})){const name=dir+f.name;if(f.isDirectory())await scan(name+'/');else if(name!=='sw.js')files.push(name);}}
+await scan('');const version=createHash('sha256').update(await readFile('dist/index.html')).digest('hex').slice(0,12);
+const core=files.filter(f=>!f.startsWith('pdf-assets/'));const sw=`const CACHE='printlib-${version}';const CORE=${JSON.stringify(core)};const ALL=${JSON.stringify(files)};self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./',...CORE.map(x=>'./'+x)]))));self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('printlib-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',event=>{const url=new URL(event.request.url);const root=new URL('./',self.location);if(event.request.method!=='GET'||url.origin!==root.origin||!url.pathname.startsWith(root.pathname))return;const rel=url.pathname.slice(root.pathname.length);if(rel!==''&&!ALL.includes(rel))return;event.respondWith(caches.open(CACHE).then(async cache=>{const cached=await cache.match(event.request,{ignoreSearch:true});if(cached)return cached;const res=await fetch(event.request);if(res.ok)cache.put(event.request,res.clone());return res;}));});`;
+await writeFile('dist/sw.js',sw);

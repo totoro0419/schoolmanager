@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.sites-runtime/
+.env*
+!.env.example
+*.tsbuildinfo
+test-results/
+fixtures/
+*.pdf
+*.zip
+data/
+coverage/
+public/pdf-assets/

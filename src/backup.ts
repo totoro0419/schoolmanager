@@ -1,0 +1,16 @@
+import {zip,unzip,strToU8,strFromU8} from 'fflate';
+import {snapshot,restoreSnapshot} from './db';
+import {validateMetadata} from './schema';
+import {sha256} from './hash';
+import type {Category,RecordDoc} from './types';
+import {validateHierarchy} from './classifier';
+export async function makeBackup(){const snap=await snapshot();const files:Record<string,Uint8Array>={};for(const [key,blob] of Object.entries(snap.files))files['files/'+key]=new Uint8Array(await blob.arrayBuffer());files['manifest.json']=strToU8(JSON.stringify({format:'printlib-backup-1',documents:snap.documents,categories:snap.categories,history:snap.history}));return new Promise<Blob>((resolve,reject)=>zip(files,{level:0},(e,bytes)=>e?reject(e):resolve(new Blob([bytes.slice().buffer],{type:'application/zip'}))));}
+export async function readBackup(file:File){if(file.size>500*1024*1024)throw Error('500MBを超えるバックアップは分割してください');let total=0;
+ // Decompress only entries within bounded uncompressed limits.
+ const bytes=new Uint8Array(await file.arrayBuffer());const extracted=await new Promise<Record<string,Uint8Array>>((resolve,reject)=>{let refused=false;unzip(bytes,{filter:entry=>{total+=entry.originalSize;if(entry.originalSize>110*1024*1024||total>1024*1024*1024){refused=true;return false;}return true;}},(e,data)=>e?reject(e):refused?reject(Error('展開後のデータが大きすぎます')):resolve(data));});
+ if(Object.keys(extracted).length>20000)throw Error('ファイル数が多すぎます');const manifest=extracted['manifest.json'];if(!manifest||manifest.length>30*1024*1024)throw Error('バックアップの管理情報がありません');const parsed=JSON.parse(strFromU8(manifest));if(parsed.format!=='printlib-backup-1'||!Array.isArray(parsed.documents)||!Array.isArray(parsed.categories)||!Array.isArray(parsed.history))throw Error('対応していないバックアップです');const blobs:Record<string,Blob>={};const ids=new Set<string>();for(const doc of parsed.documents as RecordDoc[]){doc.meta=validateMetadata(doc.meta);if(doc.id!==doc.meta.documentId||ids.has(doc.id)||doc.id.includes('/')||!Number.isInteger(doc.revision)||doc.revision<1)throw Error('教材ID・版番号が不正です');ids.add(doc.id);const original=extracted['files/'+doc.id+'/original'];const derived=extracted['files/'+doc.id+'/derived'];if(!original||!derived||await sha256(original)!==doc.fileHash)throw Error('原本が欠落、またはハッシュが一致しません');doc.sync='pending';doc.remoteRevision=null;}
+ for(const c of parsed.categories as Category[]){if(!c.id||!c.name||!Array.isArray(c.aliases)||!['subject','field','unit','materialType','series','tag'].includes(c.kind)||!['approved','proposed'].includes(c.status))throw Error('分類辞書が不正です');validateHierarchy(parsed.categories,c);}
+ for(const h of parsed.history){h.meta=validateMetadata(h.meta);if(!h.id||!h.documentId||!h.at)throw Error('履歴が不正です');}
+ for(const [path,b] of Object.entries(extracted))if(path.startsWith('files/')&&/^files\/[^/]+\/(original|derived|thumb)$/.test(path))blobs[path.slice(6)]=new Blob([b.slice().buffer],{type:path.endsWith('thumb')?'image/webp':'application/pdf'});
+ return {documents:parsed.documents as RecordDoc[],categories:parsed.categories as Category[],history:parsed.history,files:blobs};}
+export async function restoreBackup(file:File,replace:boolean){const data=await readBackup(file);await restoreSnapshot(data,replace);return data.documents.length;}

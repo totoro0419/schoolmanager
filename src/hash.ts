@@ -1,0 +1,1 @@
+export async function sha256(data:ArrayBuffer|Uint8Array){const digest=await crypto.subtle.digest('SHA-256',data instanceof Uint8Array?data.slice().buffer:data);return [...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('');}
