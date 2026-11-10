@@ -11,3 +11,8 @@
 .status.confirmed{color:#466435}.status.tentative{color:#796329}.status.unclassified{color:#7f6553}.subject-card small{font-size:10px}.form-field small,.settings-title p,.empty-library p,.list-summary,.import-guide p,.category-row small,.review-card p,.job small{font-size:11px}.home-footer,.doc-bottom,.app-footer{font-size:10px}.favorite{min-width:40px;min-height:40px;width:40px;height:40px}.category-row>.secondary{min-height:42px}.subject-nav-item{min-height:38px}.storage-pill,.workspace-label small,.sidebar-section{color:#66765d}.storage-pill small{color:#6a785f}
 
 .viewer{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;border:0;padding:0;color:#3a4e31}.viewer-controls,.viewer-name small,.viewer-footer .text-button{color:#65735d}.viewer::backdrop{background:#edf1e9}
+
+/* Schoolmanager: folded sheets form an S. Keep the mark distinct at small sizes. */
+.brand{gap:10px;letter-spacing:-.45px;font-size:16px}.brand-mark{display:block;width:42px;height:42px;flex-shrink:0;object-fit:contain}.brand-wordmark{min-width:0;white-space:nowrap;font-weight:650}.brand-wordmark small{letter-spacing:1px}.mobile-brand-mark{display:none;flex-shrink:0;object-fit:contain}
+@media(max-width:950px){.brand{gap:8px;font-size:14px}.brand-mark{width:36px;height:36px}.brand-wordmark small{letter-spacing:.6px}}
+@media(max-width:740px){.brand{font-size:16px;gap:10px}.brand-mark{width:42px;height:42px}.mobile-brand-mark{display:block;width:29px;height:29px;margin-right:4px}.global-search{min-width:0}}

@@ -1,4 +1,8 @@
+<img src="public/brand/icon-192.png" width="72" height="72" alt="Schoolmanager logo">
+
 # Schoolmanager — プリントライブラリ
+
+公開アプリ: https://totoro0419.github.io/schoolmanager/
 
 PDFの学習プリントを、教科・分野・単元・シリーズで管理する日本語Webアプリです。React / TypeScript / Vite / IndexedDB / PDF.js / pdf-libで実装しています。
 
@@ -38,7 +42,9 @@ npm run build
 
 ## GitHub Pages
 
-公開先: `https://totoro0419.github.io/schoolmanager/` （有効化前のURLは利用可能とは見なさないでください）
+公開先: https://totoro0419.github.io/schoolmanager/
+
+ロゴは、折り重ねたプリントで「S」を表現しています。アプリ内、ブラウザのアイコン、ホーム画面用アイコンに共通して使用します。
 
 初回のみ、リポジトリの **Settings → Pages → Source: GitHub Actions** を設定してください。その後、Actionsの `Verify and publish Schoolmanager` を再実行します。自動テスト、ビルド、公開ファイル検査の後にデプロイします。未有効化の場合はビルドだけが通り、デプロイはスキップされます。
 
