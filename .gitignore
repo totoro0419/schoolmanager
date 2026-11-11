@@ -11,3 +11,4 @@ fixtures/
 data/
 coverage/
 public/pdf-assets/
+!public/library/pdfs/*.pdf

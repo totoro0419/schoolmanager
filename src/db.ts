@@ -1,7 +1,9 @@
 import {openDB} from 'idb';
 import type {Category,RecordDoc,History,Settings} from './types';
 import {initialCategories,uid,now} from './model';
+import type {PublicPrintPreferences} from './public-library';
 const dbPromise=openDB('schoolmanager-printlib',1,{upgrade(db){db.createObjectStore('documents',{keyPath:'id'});db.createObjectStore('files');db.createObjectStore('categories',{keyPath:'id'});const h=db.createObjectStore('history',{keyPath:'id'});h.createIndex('documentId','documentId');db.createObjectStore('settings');}});
+const restoredDB=openDB('schoolmanager-restored-library',1,{upgrade(db){db.createObjectStore('library');}});
 export async function initDB(){const db=await dbPromise;const count=await db.count('categories');if(!count){const tx=db.transaction('categories','readwrite');for(const c of initialCategories())await tx.store.put(c);await tx.done;}return db;}
 export async function getDocs():Promise<RecordDoc[]>{return (await (await dbPromise).getAll('documents')) as RecordDoc[];}
 export async function getCategories():Promise<Category[]>{return (await (await dbPromise).getAll('categories')) as Category[];}
@@ -11,6 +13,47 @@ export async function saveDoc(doc:RecordDoc,files:Record<string,Blob>={},reason=
 export async function historyFor(id:string):Promise<History[]>{return (await (await dbPromise).getAllFromIndex('history','documentId',id)).sort((a,b)=>b.at.localeCompare(a.at));}
 export async function getSettings():Promise<Settings>{return (await (await dbPromise).get('settings','main'))||{syncUrl:'',remoteHead:null,autoSync:false};}
 export async function setSettings(s:Settings){await (await dbPromise).put('settings',s,'main');}
+export async function getPublicPrintPreferences(ids:string[]):Promise<Array<PublicPrintPreferences|undefined>>{
+ const tx=(await dbPromise).transaction('settings');
+ const values=await Promise.all(ids.map(id=>tx.store.get('public-print:'+id)));
+ await tx.done;
+ return values;
+}
+export async function savePublicPrintPreferences(id:string,patch:PublicPrintPreferences){
+ const tx=(await dbPromise).transaction('settings','readwrite');
+ const key='public-print:'+id;
+ await tx.store.put({...await tx.store.get(key),...patch},key);
+ await tx.done;
+ broadcast();
+}
+export async function getRestoredPrints():Promise<RecordDoc[]>{
+ return (await (await restoredDB).get('library','catalog'))??[];
+}
+export async function getRestoredPdf(hash:string):Promise<Blob|undefined>{
+ return (await restoredDB).get('library','pdf:'+hash);
+}
+export async function addRestoredPrints(items:{doc:RecordDoc;file:Blob}[]){
+ const local=await getDocs();
+ const tx=(await restoredDB).transaction('library','readwrite');
+ const store=tx.store;
+ const catalog:RecordDoc[]=(await store.get('catalog'))??[];
+ const existing=[...catalog,...local];
+ const ids=new Set(existing.map(doc=>doc.id));
+ const hashes=new Set(existing.map(doc=>doc.fileHash));
+ let added=0;
+ for(const {doc,file} of items){
+  if(ids.has(doc.id)||hashes.has(doc.fileHash))continue;
+  await store.put(file,'pdf:'+doc.fileHash);
+  catalog.push(doc);
+  ids.add(doc.id);
+  hashes.add(doc.fileHash);
+  added++;
+ }
+ if(added)await store.put(catalog,'catalog');
+ await tx.done;
+ if(added)broadcast();
+ return added;
+}
 export async function snapshot(){const db=await dbPromise;const tx=db.transaction(['documents','files','categories','history','settings']);const result={documents:await tx.objectStore('documents').getAll(),categories:await tx.objectStore('categories').getAll(),history:await tx.objectStore('history').getAll(),settings:await tx.objectStore('settings').get('main'),files:{} as Record<string,Blob>};const keys=await tx.objectStore('files').getAllKeys();for(const k of keys)result.files[String(k)]=await tx.objectStore('files').get(k);await tx.done;return result;}
 export async function restoreSnapshot(data:{documents:RecordDoc[];categories:Category[];history:History[];files:Record<string,Blob>},replace=false){const db=await dbPromise;const tx=db.transaction(['documents','files','categories','history'],'readwrite');if(replace)for(const name of ['documents','files','categories','history'])await tx.objectStore(name).clear();for(const doc of data.documents)await tx.objectStore('documents').put(doc);for(const cat of data.categories)await tx.objectStore('categories').put(cat);for(const h of data.history)await tx.objectStore('history').put(h);for(const [k,b] of Object.entries(data.files))await tx.objectStore('files').put(b,k);await tx.done;broadcast();}
 function broadcast(){try{const channel=new BroadcastChannel('printlib');channel.postMessage('changed');channel.close();}catch{/* no BroadcastChannel on this platform */}}

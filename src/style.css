@@ -16,3 +16,7 @@
 .brand{gap:10px;letter-spacing:-.45px;font-size:16px}.brand-mark{display:block;width:42px;height:42px;flex-shrink:0;object-fit:contain}.brand-wordmark{min-width:0;white-space:nowrap;font-weight:650}.brand-wordmark small{letter-spacing:1px}.mobile-brand-mark{display:none;flex-shrink:0;object-fit:contain}
 @media(max-width:950px){.brand{gap:8px;font-size:14px}.brand-mark{width:36px;height:36px}.brand-wordmark small{letter-spacing:.6px}}
 @media(max-width:740px){.brand{font-size:16px;gap:10px}.brand-mark{width:42px;height:42px}.mobile-brand-mark{display:block;width:29px;height:29px;margin-right:4px}.global-search{min-width:0}}
+
+.inline-viewer{position:relative;inset:auto;z-index:auto;width:100%;height:min(75dvh,800px);min-height:320px;margin:0 0 20px;border:1px solid #dce5d2;border-radius:12px;overflow:hidden}
+.inline-viewer .pdf-scroll{min-height:0}
+.inline-viewer .viewer-footer .secondary:last-child{margin-inline-start:auto}

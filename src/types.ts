@@ -12,7 +12,7 @@ export interface Metadata {
  source:{fileName:string;sha256:string;originalDocumentId:string|null;analysis:'text'|'external-ai'|'ocr'|'none'};
  pageMapping:PageMap[];review:Record<Field,Decision>;evidence:Evidence[];attributes:Record<string,unknown>;createdAt:string;updatedAt:string;
 }
-export interface RecordDoc {id:string;meta:Metadata;pageCount:number;fileSize:number;fileHash:string;searchText:string;favorite:boolean;lastOpenedAt:string|null;sync:'pending'|'synced'|'error'|'conflict';syncError?:string;remoteRevision:string|null;revision:number;deletedAt:string|null;warnings:string[];hasText:boolean;hasThumbnail:boolean}
+export interface RecordDoc {id:string;meta:Metadata;pageCount:number;fileSize:number;fileHash:string;searchText:string;favorite:boolean;lastOpenedAt:string|null;sync:'pending'|'synced'|'error'|'conflict';syncError?:string;remoteRevision:string|null;revision:number;deletedAt:string|null;warnings:string[];hasText:boolean;hasThumbnail:boolean;publicPdfUrl?:string;restoredPdf?:true}
 export interface History {id:string;documentId:string;at:string;reason:string;meta:Metadata}
 export interface Settings {syncUrl:string;remoteHead:string|null;autoSync:boolean}
 export const fieldLabels:Record<Field,string>={subject:'教科',topics:'分野・単元',materialType:'教材タイプ',series:'シリーズ',number:'教材番号',order:'表示順',tags:'タグ'};
